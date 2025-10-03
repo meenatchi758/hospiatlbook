@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Doctor Dashboard</h2>
+<p>Dr. {{ current_user.username }} ({{ current_user.specialization }})</p>
+
+<table>
+    <tr>
+        <th>Patient Name</th>
+        <th>Email</th>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Status</th>
+        <th>Actions</th>
+    </tr>
+    {% for appt in appointments %}
+    <tr>
+        <td>{{ appt.patient_name }}</td>
+        <td>{{ appt.patient_email }}</td>
+        <td>{{ appt.date }}</td>
+        <td>{{ appt.time }}</td>
+        <td>{{ appt.status }}</td>
+        <td>
+            <form method="POST" action="{{ url_for('update_status', appt_id=appt.id) }}">
+                <select name="status">
+                    <option value="Pending" {% if appt.status=='Pending' %}selected{% endif %}>Pending</option>
+                    <option value="Confirmed" {% if appt.status=='Confirmed' %}selected{% endif %}>Confirmed</option>
+                    <option value="Completed" {% if appt.status=='Completed' %}selected{% endif %}>Completed</option>
+                    <option value="Canceled" {% if appt.status=='Canceled' %}selected{% endif %}>Canceled</option>
+                </select>
+                <button type="submit">Update</button>
+            </form>
+            {% if not appt.reminder_sent %}
+            <form method="POST" action="{{ url_for('send_reminder', appt_id=appt.id) }}">
+                <button type="submit">Send Reminder</button>
+            </form>
+            {% else %}
+                <span>Reminder Sent</span>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

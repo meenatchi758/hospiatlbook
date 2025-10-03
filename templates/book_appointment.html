@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Book Appointment with Dr. {{ doctor.username }} ({{ doctor.specialization }})</h2>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <p>{{ form.patient_name.label }}<br>{{ form.patient_name(size=30) }}</p>
+    <p>{{ form.patient_email.label }}<br>{{ form.patient_email(size=30) }}</p>
+    <p>{{ form.date.label }}<br>{{ form.date() }}</p>
+    <p>{{ form.time.label }}<br>{{ form.time() }}</p>
+    <p>{{ form.submit() }}</p>
+</form>
+{% endblock %}
