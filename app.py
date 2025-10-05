@@ -1,118 +1,182 @@
-from flask import Flask, render_template, redirect, url_for, flash, request
-from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from werkzeug.security import generate_password_hash, check_password_hash
-from models import db, User, Appointment
-from forms import LoginForm, AppointmentForm
+from flask import Flask, render_template, redirect, url_for, request, flash
+from flask_sqlalchemy import SQLAlchemy
+from flask_bcrypt import Bcrypt
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret'
+app.config['SECRET_KEY'] = 'secretkey'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///clinic.db'
-db.init_app(app)
+db = SQLAlchemy(app)
+bcrypt = Bcrypt(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
 
-login_manager = LoginManager()
-login_manager.login_view = "login"
-login_manager.init_app(app)
+# -------------------- MODELS --------------------
+
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(150), nullable=False)
+    email = db.Column(db.String(150), unique=True, nullable=False)
+    password = db.Column(db.String(200), nullable=False)
+    role = db.Column(db.String(20), nullable=False)  # 'patient' or 'doctor'
+    specialization = db.Column(db.String(100))
+
+class Appointment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    date = db.Column(db.String(20), nullable=False)
+    time = db.Column(db.String(20), nullable=False)
+    reason = db.Column(db.String(300), nullable=False)
+    status = db.Column(db.String(50), default="Pending")
+    reminder_sent = db.Column(db.Boolean, default=False)
+
+    patient = db.relationship('User', foreign_keys=[patient_id], backref='patient_appointments')
+    doctor = db.relationship('User', foreign_keys=[doctor_id], backref='doctor_appointments')
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# Initialize DB and default doctor
-def init_db():
-    with app.app_context():
-        db.create_all()
-        if not User.query.filter_by(username="doctor1").first():
-            doctor = User(
-                username="Priya",
-                password=generate_password_hash("doctor123"),
-                is_doctor=True,
-                specialization="Cardiologist"
-            )
-            db.session.add(doctor)
-            db.session.commit()
+# -------------------- ROUTES --------------------
 
-# Home Page
-@app.route("/")
-def index():
-    return render_template("index.html")
+@app.route('/')
+def home():
+    return render_template('index.html')
 
-# Patient Booking
-@app.route("/book", methods=["GET", "POST"])
-def book_appointment():
-    form = AppointmentForm()
-    doctor = User.query.filter_by(is_doctor=True).first()
-    if form.validate_on_submit():
-        appointment = Appointment(
-            patient_name=form.patient_name.data,
-            patient_email=form.patient_email.data,
-            doctor_id=doctor.id,
-            date=form.date.data,
-            time=form.time.data
-        )
-        db.session.add(appointment)
+# ----------- AUTH -----------
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        password = bcrypt.generate_password_hash(request.form['password']).decode('utf-8')
+        role = request.form['role']
+        specialization = request.form.get('specialization')
+        user = User(username=username, email=email, password=password, role=role, specialization=specialization)
+        db.session.add(user)
         db.session.commit()
-        flash("Appointment booked successfully!", "success")
-        return redirect(url_for("index"))
-    return render_template("book_appointment.html", form=form, doctor=doctor)
+        flash("Registered Successfully!", "success")
+        return redirect(url_for('login'))
+    return render_template('register.html')
 
-# Doctor Dashboard
-@app.route("/doctor")
-@login_required
-def doctor_dashboard():
-    if not current_user.is_doctor:
-        flash("Access denied", "danger")
-        return redirect(url_for("index"))
-    appointments = Appointment.query.filter_by(doctor_id=current_user.id).all()
-    return render_template("doctor_dashboard.html", appointments=appointments)
-
-# Update Appointment Status
-@app.route("/update_status/<int:appt_id>", methods=["POST"])
-@login_required
-def update_status(appt_id):
-    if not current_user.is_doctor:
-        flash("Access denied", "danger")
-        return redirect(url_for("index"))
-    appt = Appointment.query.get_or_404(appt_id)
-    appt.status = request.form.get("status")
-    db.session.commit()
-    flash(f"Appointment status updated to {appt.status}", "success")
-    return redirect(url_for("doctor_dashboard"))
-
-# Send Reminder
-@app.route("/send_reminder/<int:appt_id>", methods=["POST"])
-@login_required
-def send_reminder(appt_id):
-    if not current_user.is_doctor:
-        flash("Access denied", "danger")
-        return redirect(url_for("index"))
-    appt = Appointment.query.get_or_404(appt_id)
-    if not appt.reminder_sent:
-        appt.reminder_sent = True
-        db.session.commit()
-        flash(f"Reminder sent to {appt.patient_email}", "success")
-    else:
-        flash("Reminder already sent", "info")
-    return redirect(url_for("doctor_dashboard"))
-
-# Login
-@app.route("/login", methods=["GET", "POST"])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
-        if user and check_password_hash(user.password, form.password.data):
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        user = User.query.filter_by(email=email).first()
+        if user and bcrypt.check_password_hash(user.password, password):
             login_user(user)
-            return redirect(url_for("doctor_dashboard") if user.is_doctor else url_for("index"))
+            if user.role == 'patient':
+                return redirect(url_for('dashboard_patient'))
+            else:
+                return redirect(url_for('dashboard_doctor'))
         flash("Invalid credentials", "danger")
-    return render_template("login.html", form=form)
+    return render_template('login.html')
 
-# Logout
-@app.route("/logout")
+@app.route('/logout')
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for("index"))
+    return redirect(url_for('home'))
 
-if __name__ == "__main__":
-    init_db()
+# ----------- PATIENT DASHBOARD -----------
+
+@app.route('/dashboard/patient')
+@login_required
+def dashboard_patient():
+    if current_user.role != 'patient':
+        return redirect(url_for('home'))
+    appointments = Appointment.query.filter_by(patient_id=current_user.id).all()
+    return render_template('dashboard_patient.html', appointments=appointments)
+
+# ----------- DOCTOR DASHBOARD -----------
+
+@app.route('/dashboard/doctor')
+@login_required
+def dashboard_doctor():
+    if current_user.role != 'doctor':
+        return redirect(url_for('home'))
+    appointments = Appointment.query.filter_by(doctor_id=current_user.id).all()
+    return render_template('dashboard_doctor.html', appointments=appointments)
+
+@app.route('/approve/<int:id>')
+@login_required
+def approve(id):
+    appt = Appointment.query.get_or_404(id)
+    if current_user.role == 'doctor':
+        appt.status = "Approved"
+        db.session.commit()
+        flash("Appointment Approved!", "success")
+    return redirect(url_for('dashboard_doctor'))
+
+@app.route('/reject/<int:id>')
+@login_required
+def reject(id):
+    appt = Appointment.query.get_or_404(id)
+    if current_user.role == 'doctor':
+        appt.status = "Rejected"
+        db.session.commit()
+        flash("Appointment Rejected!", "danger")
+    return redirect(url_for('dashboard_doctor'))
+
+# ----------- BOOK APPOINTMENT -----------
+
+@app.route('/book', methods=['GET', 'POST'])
+@login_required
+def book_appointment():
+    if current_user.role != 'patient':
+        return redirect(url_for('home'))
+
+    doctors = User.query.filter_by(role='doctor').limit(4).all()
+
+    if request.method == 'POST':
+        doctor_id = request.form['doctor_id']
+        date = request.form['date']
+        time = request.form['time']
+        reason = request.form['reason']
+
+        appt = Appointment(patient_id=current_user.id, doctor_id=doctor_id, date=date, time=time, reason=reason)
+        db.session.add(appt)
+        db.session.commit()
+        flash("Appointment booked successfully!", "success")
+        return redirect(url_for('dashboard_patient'))
+
+    return render_template('book_appointment.html', doctors=doctors)
+
+# ----------- REMINDER SYSTEM -----------
+
+@app.route('/send_reminders')
+def send_reminders():
+    now = datetime.now()
+    appointments = Appointment.query.filter_by(status='Approved', reminder_sent=False).all()
+    for appt in appointments:
+        appt_datetime = datetime.strptime(f"{appt.date} {appt.time}", "%Y-%m-%d %H:%M")
+        if 0 <= (appt_datetime - now).total_seconds() <= 86400:  # within 24 hours
+            print(f"Reminder: Appointment for {appt.patient.username} with {appt.doctor.username} at {appt.time} on {appt.date}")
+            appt.reminder_sent = True
+    db.session.commit()
+    return "Reminders processed successfully!"
+
+# -------------------- INITIAL SETUP --------------------
+
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+
+        if not User.query.filter_by(role='doctor').first():
+            doctors = [
+                ("Dr. Smith", "smith@clinic.com", "Cardiologist"),
+                ("Dr. Johnson", "johnson@clinic.com", "Dermatologist"),
+                ("Dr. Brown", "brown@clinic.com", "Pediatrician"),
+                ("Dr. Taylor", "taylor@clinic.com", "Orthopedic"),
+            ]
+            for name, email, spec in doctors:
+                pwd = bcrypt.generate_password_hash("password").decode('utf-8')
+                db.session.add(User(username=name, email=email, password=pwd, role="doctor", specialization=spec))
+            db.session.commit()
+
     app.run(debug=True)

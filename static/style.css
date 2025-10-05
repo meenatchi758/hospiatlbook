@@ -1,196 +1,266 @@
-/* Reset & Base */
+/* Reset */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
 }
+
+/* Body */
 body {
-    font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #cce5ff;
-    color: #333;
-    line-height: 1.6;
+  background: linear-gradient(135deg, #e0f7fa, #f1fdfb);
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
-
-
 /* Navbar */
 .navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 30px;
-    background: linear-gradient(90deg, #0d6efd, #6610f2);
-    color: white;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 50px;
+  background: linear-gradient(90deg, #006d77, #00b4a0);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  border-radius: 0 0 10px 10px;
 }
 
-.navbar .logo {
-    display: flex;
-    align-items: center;
-    font-weight: 700;
-    font-size: 1.4rem;
-    text-decoration: none;
-    color: white;
+/* Logo */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.navbar .logo img {
-    height: 40px;
-    margin-right: 10px;
-}
-.home-container {
-    max-width: 900px;
-    margin: 30px auto;
-    padding: 20px;   border-radius: 12px;
-
+.logo img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid white;
 }
 
-.hospital-description h2 {
-    color: #0d6efd;
-    margin-bottom: 15px;
+.logo span {
+  font-size: 20px;
+  font-weight: 600;
+  color: white;
+  letter-spacing: 1px;
 }
 
-.hospital-description p {
-    font-size: 1.1rem;
-    line-height: 1.8;
-    margin-bottom: 15px;
+/* Navigation links */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
-.hospital-description ul {
-    list-style-type: disc;
-    padding-left: 20px;
-    margin-bottom: 15px;
+.nav-links a {
+  text-decoration: none;
+  color: white;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: 0.3s;
 }
 
-.hospital-description ul li {
-    margin-bottom: 8px;
-    font-weight: 500;
+.nav-links a:hover {
+  background: rgba(255,255,255,0.2);
+  color: #ffeb3b;
 }
 
-.navbar-right a {
-    color: white;
-    text-decoration: none;
-    margin-left: 20px;
-    font-weight: 500;
-    transition: all 0.3s;
+/* Logout button special style */
+.logout-btn {
+  background: #ef476f;
+  color: white;
+  font-weight: 500;
+  transition: 0.3s;
 }
 
-.navbar-right a:hover {
-    color: #ffc107;
-    transform: scale(1.05);
+.logout-btn:hover {
+  background: #d32f2f;
 }
 
-/* Buttons */
-button, input[type="submit"] {
-    background: linear-gradient(90deg, #0d6efd, #6610f2);
-    color: white;
-    border: none;
-    padding: 10px 18px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.3s ease;
+/* Container */
+.container {
+  flex: 1;
+  max-width: 920px;
+  margin: 40px auto;
+  padding: 25px;
+  border-radius: 10px;
+  
 }
 
-button:hover, input[type="submit"]:hover {
-    background: linear-gradient(90deg, #0056b3, #5200b0);
-    transform: translateY(-2px);
+/* Heading */
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #00695c;
+  font-size: 22px;
 }
 
-/* Forms */
+/* Form */
 form {
-    margin: 25px 0;
-    padding: 20px;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.home-section {
+  max-width: 900px;
+  margin: 30px auto;
+  line-height:1.6;
+  padding: 0 20px;
 }
 
-input, select {
-    padding: 10px;
-    width: 100%;
-    margin: 8px 0 20px 0;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    transition: border 0.3s;
+.hero {
+  text-align: center;
+  background: #006d77;
+  color: white;
+  padding: 40px 20px;
+  border-radius: 10px;
+  margin-bottom: 30px;
 }
 
-input:focus, select:focus {
-    outline: none;
-    border-color: #0d6efd;
-    box-shadow: 0 0 6px rgba(13, 110, 253, 0.3);
+.hero h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
 }
 
-/* Tables */
+.hero p {
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+.btn-primary {
+  background: #ffcb77;
+  color: #006d77;
+  padding: 10px 20px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: 0.3s;
+}
+
+.btn-primary:hover {
+  background: #ffd966;
+}
+
+.about, .services, .how-it-works {
+  margin-bottom: 30px;
+}
+
+.about h2, .services h2, .how-it-works h2 {
+  color: #006d77;
+  margin-bottom: 12px;
+}
+
+.service-cards {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.card {
+  background: #f1f1f1;
+  padding: 20px;
+  border-radius: 10px;
+  flex: 1 1 250px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+ol {
+  padding-left: 20px;
+}
+
+
+label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  transition: 0.3s;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #26a69a;
+  box-shadow: 0 0 4px rgba(38, 166, 154, 0.3);
+}
+
+textarea {
+  resize: none;
+  height: 70px;
+}
+
+/* Button */
+button {
+  background: #26a69a;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 9px 0;
+  font-size: 15px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background: #00796b;
+}
+
+/* Table */
 table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 25px;
-    background-color: white;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 14px;
 }
 
 th, td {
-    padding: 15px 20px;
-    text-align: left;
+  padding: 8px;
+  border: 1px solid #ddd;
+  text-align: center;
 }
 
 th {
-    background: linear-gradient(90deg, #0d6efd, #6610f2);
-    color: white;
-    font-weight: 600;
+  background: #00796b;
+  color: white;
 }
 
 tr:nth-child(even) {
-    background: #f9f9f9;
-}
-
-tr:hover {
-    background: #e9f0ff;
+  background: #f9f9f9;
 }
 
 /* Flash Messages */
 .flash {
-    padding: 12px 20px;
-    margin: 15px 0;
-    border-radius: 8px;
-    font-weight: 500;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  text-align: center;
+  font-size: 14px;
 }
 
-.flash-success { background-color: #d4edda; color: #155724; }
-.flash-danger { background-color: #f8d7da; color: #721c24; }
-.flash-info { background-color: #cce5ff; color: #004085; }
-
-/* Page Header */
-h2 {
-    margin: 25px 0;
-    color: #0d6efd;
-    font-weight: 700;
+.flash.success {
+  background: #c8e6c9;
+  color: #256029;
 }
 
-/* Reminder badge */
-.reminder-sent {
-    padding: 6px 12px;
-    background-color: #28a745;
-    color: white;
-    border-radius: 12px;
-    font-size: 0.85em;
-    font-weight: 600;
+.flash.danger {
+  background: #ffcdd2;
+  color: #b71c1c;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .navbar {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    .navbar-right {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        margin-top: 10px;
-    }
-    .navbar-right a {
-        margin: 8px 0;
-    }
+/* Footer */
+footer {
+  text-align: center;
+  padding: 10px 0;
+  background: #e7ecef;
+  color: #333;
+  font-size: 13px;
+  margin-top: auto;
+  width: 100%;
 }
